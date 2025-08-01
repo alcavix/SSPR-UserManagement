@@ -1,5 +1,5 @@
 name: "Feature Request"
-description: "Suggest a new feature or enhancement for IntuneWin Creator"
+description: "Suggest a new feature or enhancement for the SSPR-UserManagement script"
 title: "[Feature] "
 labels: ["feature request"]
 assignees: []
@@ -9,7 +9,7 @@ body:
     attributes:
       value: |
         ## 💡 Feature Request
-        Thank you for helping improve **IntuneWin Creator**!  
+        Thank you for helping improve **SSPR-UserManagement**!  
         Please provide as much detail as possible so we can understand your idea.  
         **Required:** Keep the `[Feature]` prefix in the title for clarity.
 
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Feature Summary
       description: A short, clear summary of your feature request.
-      placeholder: "Example: Add support for multi-file drag & drop"
+      placeholder: "Example: Add support for exporting results to CSV"
     validations:
       required: true
 
@@ -26,12 +26,12 @@ body:
     id: details
     attributes:
       label: Detailed Description
-      description: Explain why this feature would be useful and how it should work.
+      description: Explain why this feature would be useful and how you envision it working.
       placeholder: |
         Describe your idea in detail:
-        - Why is this feature needed?
-        - How should it behave?
-        - Any specific use cases?
+        - What problem does it solve?
+        - How should the script behave?
+        - Example: Add a `-ExportCsv` switch to save output automatically
     validations:
       required: true
 
@@ -39,8 +39,8 @@ body:
     id: alternatives
     attributes:
       label: Alternatives Considered
-      description: Optional – Have you considered any alternatives or workarounds?
+      description: Optional – Have you considered any alternative approaches or workarounds?
       placeholder: |
         Example:
-        - Use PowerShell manually as a workaround
-        - Package apps using Microsoft Endpoint Manager directly
+        - Manually run `Export-Csv` after script execution
+        - Maintain a separate log file for tracking changes

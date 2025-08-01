@@ -1,5 +1,5 @@
 name: "Bug report"
-description: "Report a problem or unexpected behavior in IntuneWin Creator"
+description: "Report a problem or unexpected behavior in SSPR-UserManagement script"
 title: "[Bug] "
 labels: ["bug"]
 assignees: []
@@ -9,15 +9,16 @@ body:
     attributes:
       value: |
         ## 🐞 Bug Report
-        Thanks for taking the time to report a bug! Please provide as much detail as possible.
+        Thank you for taking the time to report an issue with **SSPR-UserManagement**.  
+        Please provide as much detail as possible to help reproduce and fix the problem.  
         **Required:** Keep the `[Bug]` prefix in the title for clarity.
 
   - type: input
     id: summary
     attributes:
       label: Bug Summary
-      description: A clear and concise description of the issue.
-      placeholder: "Example: App crashes when dragging multiple files"
+      description: A short and clear description of the problem.
+      placeholder: "Example: Script fails to disable expired accounts"
     validations:
       required: true
 
@@ -25,11 +26,11 @@ body:
     id: steps
     attributes:
       label: Steps to Reproduce
-      description: Step-by-step instructions to trigger the bug.
+      description: Step-by-step instructions to trigger the issue.
       placeholder: |
-        1. Open the app
-        2. Drag & drop multiple files
-        3. Observe crash
+        1. Launch PowerShell
+        2. Run .\SSPR-UserManagement.ps1 with parameters X, Y
+        3. Observe the error message
     validations:
       required: true
 
@@ -37,8 +38,8 @@ body:
     id: expected
     attributes:
       label: Expected Behavior
-      description: What you expected to happen.
-      placeholder: "The app should handle multiple file drops without crashing."
+      description: What did you expect the script to do?
+      placeholder: "The script should disable accounts and generate the expected report."
     validations:
       required: true
 
@@ -46,27 +47,38 @@ body:
     id: actual
     attributes:
       label: Actual Behavior
-      description: What actually happened, including any errors or screenshots.
-      placeholder: "The app freezes for 3 seconds, then closes."
+      description: What actually happened, including any error messages.
+      placeholder: "The script throws 'Access Denied' and stops execution."
 
   - type: dropdown
     id: severity
     attributes:
       label: Severity
-      description: How severe is this bug?
+      description: How severe is this issue?
       options:
-        - High
-        - Medium
-        - Low
+        - High (Script cannot run or produces critical errors)
+        - Medium (Partial functionality or unexpected behavior)
+        - Low (Minor issue, does not block usage)
     validations:
       required: true
 
   - type: input
-    id: app_version
+    id: script_version
     attributes:
-      label: App Version
-      description: Which version of IntuneWin Creator are you using?
-      placeholder: "Example: v1.2.0"
+      label: Script Version
+      description: Which version of SSPR-UserManagement are you using?
+      placeholder: "Example: v1.0.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ps_version
+    attributes:
+      label: PowerShell Version
+      description: Which PowerShell version are you running the script on?
+      options:
+        - PowerShell 5.1 (Windows PowerShell)
+        - PowerShell 7.x (Core)
     validations:
       required: true
 
@@ -74,7 +86,7 @@ body:
     id: os
     attributes:
       label: Operating System
-      description: Select the OS where the issue occurs.
+      description: Select the OS where the script is running.
       options:
         - Windows 10
         - Windows 11
@@ -87,7 +99,7 @@ body:
   - type: input
     id: os_version
     attributes:
-      label: OS Version
+      label: OS Version / Build
       description: Enter the exact OS version/build if available.
       placeholder: "Example: 22631.3593 (Windows 11 23H2)"
 
@@ -96,5 +108,5 @@ body:
     attributes:
       label: Attachments
       description: |
-        Drag & drop screenshots or log files that help explain the problem.
-      placeholder: "You can drag & drop images or files here."
+        Drag & drop screenshots, error logs, or output files that help explain the problem.
+      placeholder: "You can drag & drop images, logs, or files here."
