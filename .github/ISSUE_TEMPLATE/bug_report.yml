@@ -1,0 +1,100 @@
+name: "Bug report"
+description: "Report a problem or unexpected behavior in IntuneWin Creator"
+title: "[Bug] "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐞 Bug Report
+        Thanks for taking the time to report a bug! Please provide as much detail as possible.
+        **Required:** Keep the `[Bug]` prefix in the title for clarity.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Bug Summary
+      description: A clear and concise description of the issue.
+      placeholder: "Example: App crashes when dragging multiple files"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to trigger the bug.
+      placeholder: |
+        1. Open the app
+        2. Drag & drop multiple files
+        3. Observe crash
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+      placeholder: "The app should handle multiple file drops without crashing."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened, including any errors or screenshots.
+      placeholder: "The app freezes for 3 seconds, then closes."
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      description: Which version of IntuneWin Creator are you using?
+      placeholder: "Example: v1.2.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Select the OS where the issue occurs.
+      options:
+        - Windows 10
+        - Windows 11
+        - Windows Server 2022
+        - Windows Server 2019
+        - Windows Server 2016
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: OS Version
+      description: Enter the exact OS version/build if available.
+      placeholder: "Example: 22631.3593 (Windows 11 23H2)"
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Attachments
+      description: |
+        Drag & drop screenshots or log files that help explain the problem.
+      placeholder: "You can drag & drop images or files here."

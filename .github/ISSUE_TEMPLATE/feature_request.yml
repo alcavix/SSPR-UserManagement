@@ -1,0 +1,46 @@
+name: "Feature Request"
+description: "Suggest a new feature or enhancement for IntuneWin Creator"
+title: "[Feature] "
+labels: ["feature request"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 Feature Request
+        Thank you for helping improve **IntuneWin Creator**!  
+        Please provide as much detail as possible so we can understand your idea.  
+        **Required:** Keep the `[Feature]` prefix in the title for clarity.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A short, clear summary of your feature request.
+      placeholder: "Example: Add support for multi-file drag & drop"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Detailed Description
+      description: Explain why this feature would be useful and how it should work.
+      placeholder: |
+        Describe your idea in detail:
+        - Why is this feature needed?
+        - How should it behave?
+        - Any specific use cases?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Optional – Have you considered any alternatives or workarounds?
+      placeholder: |
+        Example:
+        - Use PowerShell manually as a workaround
+        - Package apps using Microsoft Endpoint Manager directly
