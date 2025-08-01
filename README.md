@@ -2,10 +2,11 @@
 
 > A comprehensive PowerShell tool for creating, managing, and testing Active Directory service accounts specifically designed for Self-Service Password Reset (SSPR) systems.
 
-[![Open Source](https://img.shields.io/badge/Open%20Source-GitHub-black?style=flat&logo=github)](https://github.com/alcavi434/IntuneWin-Creator)
+[![Open Source](https://img.shields.io/badge/Open%20Source-GitHub-black?style=flat&logo=github)](https://github.com/alcavi434/SSPR-UserManagement)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PowerShell 5.1](https://img.shields.io/badge/PowerShell-5.1-5391FE.svg?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/)
 [![PowerShell 7+](https://img.shields.io/badge/PowerShell-7%2B-5391FE.svg?logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
+[![GitHub release](https://img.shields.io/github/release/alcavi434/SSPR-UserManagement.svg)](https://github.com/alcavi434/SSPR-UserManagement/releases/latest)
 
 
 ## 📚 Table of Contents

@@ -1,5 +1,5 @@
 # ========================================
-# IntuneWin Creator - .gitignore
+#  SSPR-UserManagement - .gitignore
 # ========================================
 # This file specifies intentionally untracked files that Git should ignore.
 # Author: Tomer Alcavi
@@ -386,12 +386,6 @@ node_modules/
 *.tar
 *.tar.gz
 *.tar.bz2
-
-# ========================================
-# Project Specific
-# ========================================
-# IntuneWinAppUtil.exe (downloaded automatically)
-IntuneWinAppUtil.exe
 
 # User-specific configuration files
 *.config.user
