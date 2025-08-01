@@ -49,9 +49,7 @@
 
 ## 📋 Main Menu
 
-📸 *Screenshot placeholder - Main menu interface*
-
-<img src="demo/main-interface.png" alt="SSPR Service Account Manager Menu" width="100%">
+*Main menu interface*
 
 ```
 ################################################################
