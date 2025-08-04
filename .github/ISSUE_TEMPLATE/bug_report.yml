@@ -1,0 +1,112 @@
+name: "Bug report"
+description: "Report a problem or unexpected behavior in SSPR-UserManagement script"
+title: "[Bug] "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐞 Bug Report
+        Thank you for taking the time to report an issue with **SSPR-UserManagement**.  
+        Please provide as much detail as possible to help reproduce and fix the problem.  
+        **Required:** Keep the `[Bug]` prefix in the title for clarity.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Bug Summary
+      description: A short and clear description of the problem.
+      placeholder: "Example: Script fails to disable expired accounts"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to trigger the issue.
+      placeholder: |
+        1. Launch PowerShell
+        2. Run .\SSPR-UserManagement.ps1 with parameters X, Y
+        3. Observe the error message
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect the script to do?
+      placeholder: "The script should disable accounts and generate the expected report."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened, including any error messages.
+      placeholder: "The script throws 'Access Denied' and stops execution."
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this issue?
+      options:
+        - High (Script cannot run or produces critical errors)
+        - Medium (Partial functionality or unexpected behavior)
+        - Low (Minor issue, does not block usage)
+    validations:
+      required: true
+
+  - type: input
+    id: script_version
+    attributes:
+      label: Script Version
+      description: Which version of SSPR-UserManagement are you using?
+      placeholder: "Example: v1.0.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ps_version
+    attributes:
+      label: PowerShell Version
+      description: Which PowerShell version are you running the script on?
+      options:
+        - PowerShell 5.1 (Windows PowerShell)
+        - PowerShell 7.x (Core)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Select the OS where the script is running.
+      options:
+        - Windows 10
+        - Windows 11
+        - Windows Server 2022
+        - Windows Server 2019
+        - Windows Server 2016
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: OS Version / Build
+      description: Enter the exact OS version/build if available.
+      placeholder: "Example: 22631.3593 (Windows 11 23H2)"
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Attachments
+      description: |
+        Drag & drop screenshots, error logs, or output files that help explain the problem.
+      placeholder: "You can drag & drop images, logs, or files here."
