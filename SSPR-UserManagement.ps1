@@ -1,6 +1,11 @@
+#Requires -Version 5.1
+#Requires -Modules ActiveDirectory
+#Requires -RunAsAdministrator
+
+<#
 #######################################################################################
 #  Project:      SSPR-UserManagement
-#  Version:      1.2.0
+#  Version:      1.3.0
 #  Author:       Tomer Alcavi
 #  GitHub:       https://github.com/alcavix
 #  Project Link: https://github.com/alcavix/SSPR-UserManagement
@@ -12,14 +17,6 @@
 #  Grateful for the open-source community and spirit that inspires projects like this.
 #######################################################################################
 
-#Requires -Version 5.1
-#Requires -Modules ActiveDirectory
-#Requires -RunAsAdministrator
-
-<#
-.LINK
-    https://github.com/alcavix/SSPR-UserManagement
-
 .SYNOPSIS
     Active Directory SSPR Service Account Management Tool
 
@@ -29,9 +26,9 @@
     
     Features:
     - Secure service account creation with randomized passwords
-    - Permission-based password reset access control with ACL management
+    - Permission-based password reset AND unlock account access control with ACL management
     - Automatic sensitive group protection (Domain Admins, Enterprise Admins, etc.)
-    - Custom group inclusion/exclusion for password reset permissions
+    - Custom group inclusion/exclusion for password reset and unlock permissions
     - Post-creation permission editing capabilities
     - Permission validation and testing with expected behavior analysis
     - Administrative privilege enforcement
@@ -40,12 +37,16 @@
     - User-friendly console interface with clear prompts and feedback
     - including test analysis for expected behavior and security implications, 
       and to ensure permissions are set correctly (On your on responsibility, Tip: do it on test user accounts only)
+    
+    Permissions Managed:
+    - Reset Password (Extended Right) - for password reset operations
+    - Write lockoutTime (Property) - for unlock account operations
 
 .AUTHOR
     Tomer Alcavi
 
 .VERSION
-    1.2
+    1.3
 
 .NOTES
     Requires:
@@ -274,7 +275,7 @@ function Set-PasswordResetPermissions {
         [string[]]$DeniedGroupDNs = @()
     )
     
-    # ADDED: Configure password reset permissions for SSPR service account with group-level granular control
+    # ADDED: Configure password reset and unlock permissions for SSPR service account with group-level granular control
     try {
         # Import required module for ACL operations
         Import-Module ActiveDirectory -ErrorAction Stop
@@ -282,72 +283,98 @@ function Set-PasswordResetPermissions {
         # Get the service account's SID
         $serviceAccount = Get-ADUser -Identity $ServiceAccountDN
         $serviceAccountSID = $serviceAccount.SID
-          Write-Log "Configuring password reset permissions for $($serviceAccount.SamAccountName)" "INFO"
+        Write-Log "Configuring password reset and unlock permissions for $($serviceAccount.SamAccountName)" "INFO"
         Write-Log "Target delegation object: $TargetOU" "INFO"
         
-        # Set permissions on the target for general password reset capability
-        $targetACL = Get-ACL -Path "AD:\$TargetOU"
-        
-        # Grant "Reset Password" permission on User objects in the OU
+        # GUIDs for permissions
         $resetPasswordGUID = [GUID]"00299570-246d-11d0-a768-00aa006e0529"  # Reset Password extended right
-        $userObjectGUID = [GUID]"bf967aba-0de6-11d0-a285-00aa003049e2"    # User object type
+        $lockoutTimeGUID = [GUID]"28630ebf-41d5-11d1-a9c1-0000f80367c1"    # lockoutTime attribute
+        $userObjectGUID = [GUID]"bf967aba-0de6-11d0-a285-00aa003049e2"     # User object type
         
-        $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
-            $serviceAccountSID,
-            [System.DirectoryServices.ActiveDirectoryRights]::ExtendedRight,
-            [System.Security.AccessControl.AccessControlType]::Allow,
-            $resetPasswordGUID,
-            [System.DirectoryServices.ActiveDirectorySecurityInheritance]::Descendents,
-            $userObjectGUID
-        )
-          $targetACL.SetAccessRule($ace)
-        Set-ACL -Path "AD:\$TargetOU" -AclObject $targetACL
-        Write-Log "Granted password reset permissions on delegation target: $TargetOU" "SUCCESS"
+        # Apply Reset Password permission using dsacls (most reliable method)
+        Write-Log "Applying Reset Password extended right..." "INFO"
+        $domainNetBIOS = (Get-ADDomain).NetBIOSName
+        $dsaclsResult = dsacls "$TargetOU" /I:S /G "${domainNetBIOS}\$($serviceAccount.SamAccountName):CA;Reset Password;user" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log "Granted Reset Password permission on delegation target: $TargetOU" "SUCCESS"
+        } else {
+            Write-Log "Failed to apply Reset Password permission: $dsaclsResult" "ERROR"
+        }
         
-        # Apply explicit DENY permissions for sensitive groups
+        # Apply lockoutTime permission using dsacls
+        Write-Log "Applying lockoutTime (unlock) write property..." "INFO"
+        $dsaclsResult2 = dsacls "$TargetOU" /I:S /G "${domainNetBIOS}\$($serviceAccount.SamAccountName):WP;lockoutTime;user" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log "Granted Unlock Account (lockoutTime) permission on delegation target: $TargetOU" "SUCCESS"
+        } else {
+            Write-Log "Failed to apply lockoutTime permission: $dsaclsResult2" "ERROR"
+        }
+        
+        # Apply explicit DENY permissions for sensitive groups (both Reset Password and Unlock Account)
         $sensitiveGroupDNs = Get-SensitiveGroupDNs
         foreach ($groupDN in $sensitiveGroupDNs) {
             try {
                 $groupACL = Get-ACL -Path "AD:\$groupDN"
                 
                 # Create DENY ACE for password reset on this group's members
-                $denyAce = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+                $denyAceResetPassword = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
                     $serviceAccountSID,
                     [System.DirectoryServices.ActiveDirectoryRights]::ExtendedRight,
                     [System.Security.AccessControl.AccessControlType]::Deny,
                     $resetPasswordGUID,
                     [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
                 )
+                $groupACL.AddAccessRule($denyAceResetPassword)
                 
-                $groupACL.SetAccessRule($denyAce)
-                Set-ACL -Path "AD:\$groupDN" -AclObject $groupACL
+                # Create DENY ACE for unlock account (lockoutTime) on this group's members
+                $denyAceUnlock = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+                    $serviceAccountSID,
+                    [System.DirectoryServices.ActiveDirectoryRights]::WriteProperty,
+                    [System.Security.AccessControl.AccessControlType]::Deny,
+                    $lockoutTimeGUID,
+                    [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+                )
+                $groupACL.AddAccessRule($denyAceUnlock)
+                
+                Set-ACL -Path "AD:\$groupDN" -AclObject $groupACL -ErrorAction Stop
                 
                 $groupName = (Get-ADGroup -Identity $groupDN).Name
-                Write-Log "Applied DENY password reset permission for sensitive group: $groupName" "SUCCESS"
+                Write-Log "Applied DENY password reset and unlock permissions for sensitive group: $groupName" "SUCCESS"
             }
             catch {
                 Write-Log "Failed to set DENY permission for group $groupDN : $($_.Exception.Message)" "ERROR"
             }
         }
         
-        # Apply additional DENY permissions for custom denied groups
+        # Apply additional DENY permissions for custom denied groups (both Reset Password and Unlock Account)
         foreach ($groupDN in $DeniedGroupDNs) {
             try {
                 $groupACL = Get-ACL -Path "AD:\$groupDN"
                 
-                $denyAce = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+                # DENY password reset
+                $denyAceResetPassword = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
                     $serviceAccountSID,
                     [System.DirectoryServices.ActiveDirectoryRights]::ExtendedRight,
                     [System.Security.AccessControl.AccessControlType]::Deny,
                     $resetPasswordGUID,
                     [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
                 )
+                $groupACL.AddAccessRule($denyAceResetPassword)
                 
-                $groupACL.SetAccessRule($denyAce)
-                Set-ACL -Path "AD:\$groupDN" -AclObject $groupACL
+                # DENY unlock account (lockoutTime)
+                $denyAceUnlock = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+                    $serviceAccountSID,
+                    [System.DirectoryServices.ActiveDirectoryRights]::WriteProperty,
+                    [System.Security.AccessControl.AccessControlType]::Deny,
+                    $lockoutTimeGUID,
+                    [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+                )
+                $groupACL.AddAccessRule($denyAceUnlock)
+                
+                Set-ACL -Path "AD:\$groupDN" -AclObject $groupACL -ErrorAction Stop
                 
                 $groupName = (Get-ADGroup -Identity $groupDN).Name
-                Write-Log "Applied custom DENY password reset permission for group: $groupName" "SUCCESS"
+                Write-Log "Applied custom DENY password reset and unlock permissions for group: $groupName" "SUCCESS"
             }
             catch {
                 Write-Log "Failed to set custom DENY permission for group $groupDN : $($_.Exception.Message)" "ERROR"
@@ -368,12 +395,12 @@ function Test-PasswordResetPermissions {
         [string]$TestUserName
     )
     
-    # ADDED: Test if service account can reset password for a specific user, respecting group restrictions
+    # ADDED: Test if service account can reset password and unlock account for a specific user, respecting group restrictions
     try {
         $serviceAccount = Get-ADUser -Identity $ServiceAccountName -ErrorAction Stop
         $testUser = Get-ADUser -Identity $TestUserName -Properties MemberOf -ErrorAction Stop
         
-        Write-Log "Testing password reset permissions for $ServiceAccountName -> $TestUserName" "INFO"
+        Write-Log "Testing password reset and unlock permissions for $ServiceAccountName -> $TestUserName" "INFO"
         
         # Check if test user is member of any sensitive groups
         $isMemberOfSensitiveGroup = $false
@@ -663,7 +690,7 @@ function Edit-SSPRUser {
             }
             
             "3" {
-                # Remove custom group from deny list (remove DENY ACE)
+                # Remove custom group from deny list (remove DENY ACEs for both Reset Password and Unlock)
                 $groupName = Read-Host "Enter group name to remove from DENY list"
                 if (-not [string]::IsNullOrWhiteSpace($groupName)) {
                     try {
@@ -671,16 +698,17 @@ function Edit-SSPRUser {
                         if ($group) {
                             $groupDN = $group.DistinguishedName
                             
-                            # Remove DENY ACE from group
+                            # Remove DENY ACEs from group
                             $groupACL = Get-ACL -Path "AD:\$groupDN"
                             $resetPasswordGUID = [GUID]"00299570-246d-11d0-a768-00aa006e0529"
+                            $lockoutTimeGUID = [GUID]"28630ebf-41d5-11d1-a9c1-0000f80367c1"
                             
-                            # Find and remove DENY ACEs for this service account
+                            # Find and remove DENY ACEs for this service account (both Reset Password and lockoutTime)
                             $acesToRemove = @()
                             foreach ($ace in $groupACL.Access) {
                                 if ($ace.IdentityReference.Value -eq $serviceAccount.SID -and 
                                     $ace.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Deny -and
-                                    $ace.ObjectType -eq $resetPasswordGUID) {
+                                    ($ace.ObjectType -eq $resetPasswordGUID -or $ace.ObjectType -eq $lockoutTimeGUID)) {
                                     $acesToRemove += $ace
                                 }
                             }
@@ -690,7 +718,7 @@ function Edit-SSPRUser {
                             }
                             
                             Set-ACL -Path "AD:\$groupDN" -AclObject $groupACL
-                            Write-Log "Successfully removed '$groupName' from DENY list" "SUCCESS"
+                            Write-Log "Successfully removed '$groupName' from DENY list (password reset and unlock)" "SUCCESS"
                         }
                     }
                     catch {
@@ -984,16 +1012,18 @@ function Reset-SSPRUserToDefault {
         # Step 1: Remove existing permissions for this service account
         Write-Log "Step 1: Cleaning existing permissions..." "INFO"
         
-        # Get all ACLs where this service account might have permissions
+        # GUIDs for permissions to clean
         $resetPasswordGUID = [GUID]"00299570-246d-11d0-a768-00aa006e0529"
-          # Clean delegation target permissions first
+        $lockoutTimeGUID = [GUID]"28630ebf-41d5-11d1-a9c1-0000f80367c1"
+        
+        # Clean delegation target permissions first
         try {
             $targetACL = Get-ACL -Path "AD:\$delegationOU"
             $acesToRemove = @()
             
             foreach ($ace in $targetACL.Access) {
                 if ($ace.IdentityReference.Value -eq $serviceAccount.SID -and 
-                    $ace.ObjectType -eq $resetPasswordGUID) {
+                    ($ace.ObjectType -eq $resetPasswordGUID -or $ace.ObjectType -eq $lockoutTimeGUID)) {
                     $acesToRemove += $ace
                 }
             }
@@ -1020,7 +1050,7 @@ function Reset-SSPRUserToDefault {
                 
                 foreach ($ace in $groupACL.Access) {
                     if ($ace.IdentityReference.Value -eq $serviceAccount.SID -and 
-                        $ace.ObjectType -eq $resetPasswordGUID) {
+                        ($ace.ObjectType -eq $resetPasswordGUID -or $ace.ObjectType -eq $lockoutTimeGUID)) {
                         $acesToRemove += $ace
                     }
                 }

@@ -1,6 +1,6 @@
 # 🔐 SSPR Service Account Manager
 
-> A comprehensive PowerShell tool for creating, managing, and testing Active Directory service accounts specifically designed for Self-Service Password Reset (SSPR) systems.
+> A comprehensive PowerShell tool for creating, managing, and testing Active Directory service accounts specifically designed for Self-Service Password Reset (SSPR) systems, including password reset and account unlock capabilities.
 
 [![Open Source](https://img.shields.io/badge/Open%20Source-GitHub-black?style=flat&logo=github)](https://github.com/alcavix/SSPR-UserManagement)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -23,7 +23,7 @@
 ## 🎯 Features
 
 - **Secure Service Account Creation** - Generate service accounts with 24+ character randomized passwords
-- **Permission-Based Access Control** - Configure granular password reset permissions
+- **Permission-Based Access Control** - Configure granular password reset and account unlock permissions
 - **Automatic Security Protection** - Built-in protection for sensitive groups (Domain Admins, Enterprise Admins, etc.)
 - **Permission Testing & Validation** - Test and validate password reset permissions
 - **Flexible Delegation Targets** - Support for OUs, Containers, and Domain Root delegation
@@ -82,7 +82,7 @@ Enter display name: SSPR Test Service Account
 Enter description: Service account for SSPR testing
 
 [SUCCESS] Service account 'svc-sspr-test' created successfully
-[SUCCESS] Password reset permissions configured with sensitive group protection
+[SUCCESS] Password reset and account unlock permissions configured with sensitive group protection
 
 **************************************************
 IMPORTANT: Save this password securely!
@@ -111,7 +111,7 @@ SSPR-UserManagement/
 
 **Logging:** All operations are logged to `%TEMP%\SSPR-ServiceAccount-Manager.log`
 
-⚠️ **Important:** Always test in non-production environments first. Review security implications before granting password reset permissions.
+⚠️ **Important:** Always test in non-production environments first. Review security implications before granting password reset and account unlock permissions.
 
 ## 🏷️ GitHub Topics
 
